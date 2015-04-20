@@ -13,6 +13,7 @@ function process_graph(_id, _data, _width, _height, _distance, _charge){
 	var charge  = _charge === undefined ? DEV_CHARGE : _charge;
 	var nodes   = {};
 	var links_data = [];
+	var linktypes = [];
 
 	var vbox_x = 0;
 	var vbox_y = 0;
@@ -20,14 +21,25 @@ function process_graph(_id, _data, _width, _height, _distance, _charge){
 	var vbox_default_height = vbox_height = height;
 
 	var linknum = 0;
+	var linktypenum = 0;
 	_data.forEach(function(link) {
-	  links_data[linknum] = {};
-	  links_data[linknum].source = nodes[link.source] || (nodes[link.source] = {name: link.source});
-	  links_data[linknum].target = nodes[link.target] || (nodes[link.target] = {name: link.target});
-	  links_data[linknum].type = link.type === undefined ? 'none' : link.type;
-
-	  //links_data[linknum].st && (links_data[linknum].source['state'] = link.st);
-	  linknum = linknum + 1;
+		links_data[linknum] = {};
+		links_data[linknum].source = nodes[link.source] || (nodes[link.source] = {name: link.source});
+		links_data[linknum].target = nodes[link.target] || (nodes[link.target] = {name: link.target});
+		links_data[linknum].type = link.type === undefined ? 'none' : link.type;
+		if( !(link.target_type === undefined) ){
+			nodes[link.target].type = link.target_type;
+		}
+		if( !(link.source_type === undefined) ){
+			nodes[link.source].type = link.source_type;
+		}
+		if( !(link.type === undefined) ){
+			if($.inArray(link.type, linktypes) == -1){
+				linktypes[linktypenum] = link.type;
+				linktypenum++;
+			}
+		}
+		linknum++;
 	});
 
 	var force = d3.layout.force()
@@ -46,37 +58,55 @@ function process_graph(_id, _data, _width, _height, _distance, _charge){
 	    .attr("viewBox", "" + vbox_x + " " + vbox_y + " " + vbox_width + " " + vbox_height);
 
 	// Per-type markers, as they don't inherit styles.
-	  svg.append("defs").selectAll("marker")
-	    .data(["suit", "licensing", "resolved"])
-	  .enter().append("marker")
-	    .attr("id", function(d) { return d; })
-	    .attr("viewBox", "0 -5 10 10")
-	    .attr("refX", 3)
-	    .attr("refY", -1.5)
-	    .attr("markerWidth", 8)
-	    .attr("markerHeight", 8)
-	    .attr("orient", "auto")
-	  .append("path")
-	    .attr("d", "M0,-4L10,0L0,5");
+	svg.append("defs").selectAll("marker")
+		.data(linktypes)
+	.enter().append("marker")
+		.attr("id", function(d) { return d; })
+		.attr("viewBox", "0 -5 10 10")
+		.attr("refX", 22)
+		.attr("refY", -0.47)
+		.attr("markerWidth", 8)
+		.attr("markerHeight", 8)
+		.attr("markerUnits", 0.1)
+		.attr("orient", "auto")
+		.attr("class", function(d){ return "allow_" + d; })
+	.append("path")
+		.attr("d", "M0,-3L10,0L0,5");
 
 	var path = svg.append("g").selectAll("path")
 	    .data(force.links())
 	  .enter().append("path")
-	    .attr("class", function(d) { return "link " + d.type; })
+	  	.attr("fill","none")
+	  	.attr("stroke","black")
+	    .attr("class", function(d) {
+	     return "link " + " link_" + d.type; })
 	    .attr("marker-end", function(d) { return "url(#" + d.type + ")"; });
 
 
 	var circle = svg.append("g").selectAll("circle")
 	    .data(force.nodes())
 	  .enter().append("circle")
-	    .attr("r", 6)
+	    .attr("r", 10)
 	    .call(force.drag)
 	    .attr("id", function(d) { return "nid_" + d.name;})
-	    //.attr("class", function(d){ return "circle " + d.state; });
-;
+	    .attr("class", function(d){
+	    	var tmp = "node";
+	    	if(!(d.type === undefined)){
+	    		tmp += " node_" + d.type;
+	    	} 
+	    	return tmp; 
+	    });
+
 	var text = svg.append("g").selectAll("text")
 	    .data(force.nodes())
 	  .enter().append("text")
+	  	.attr("class",function(d){
+	    	var tmp = "node_label";
+	    	if(!(d.type === undefined)){
+	    		tmp += " node_label_" + d.type;
+	    	} 
+	    	return tmp; 
+	    })
 	    .attr("x", 11)
 	    .attr("y", ".31em")
 	    .text(function(d) { return d.name; });

@@ -12,32 +12,43 @@
 		border: 1px black solid;
 	}
 
-.link {
-  fill: none;
-  stroke: #666;
-  stroke-width: 1.5px;
-}
+  .link,
+  .link_none {
+    stroke: #666;
+    stroke-width: 1px;
+  }
 
-#licensing {
-  fill: red;
-}
+  .allow_none {
+    fill: #666;
+  }
 
-.link.licensing {
-  stroke: red;
-}
+  .link_friend{
+    stroke: blue;
+    stroke-width: 1px;
+  }
 
-.link.resolved {
-  stroke-dasharray: 0,2 1;
-}
+  .allow_friend{
+    fill: blue;
+  }
 
-circle {
-  fill: #ccc;
-  stroke: #333;
-  stroke-width: 2px;
-}
+  .node {
+    fill: #ccc;
+    stroke: #333;
+    stroke-width: 2px;
+  }
 
-text {
-  font: 12px sans-serif;
+  .node_me{
+    fill: #fdd;
+    stroke: red;
+  }
+
+  .node_friend{
+    fill: #ddf;
+    stroke: blue;
+  }
+
+.node_label {
+  font: 14px sans-serif;
   pointer-events: none;
   text-shadow: 0 1px 0 #fff, 1px 0 0 #fff, 0 -1px 0 #fff, -1px 0 0 #fff;
 }
@@ -46,100 +57,89 @@ div.box{
   border:1px black solid;
 }
 
-#nid_Kodak {
-  fill: red;
-}
+	</style>
 
-.circle.start{
-  fill: blue;
-}
-
-.circle.goal{
-  fill: yellow;
-}	</style>
 
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
 <script src="http://d3js.org/d3.v2.js"></script>
-<script src="http://cdnjs.cloudflare.com/ajax/libs/prettify/188.0.0/prettify.js"></script>
-
-<!--	<script src="/visualization/js/d3.v3.min.js"></script> -->
-	<script src="js/processgraph.js"></script>
+<script src="js/processgraph.js"></script>
 </head>
 <body>
 
 	<div class="box" id="graph"></div><br/>
 	<a href="javascript:void(0)" onclick="show_svg_code('graph','#svg_code'); return false;">code</a><br/>
 	<a href="javascript:void(0)" onclick="redraw('#graph', 400, 300, 80, -2000); return false;">redraw</a><br/>
-	<div><code id="svg_code">zzz</code></div>
+	<div id="suit"><code id="svg_code">zzz</code></div>
 
 <script>
 
 var links = [/*
   {source: "Microsoft", target: "Amazon", type: "licensing", st: "start"},
   {source: "Microsoft", target: "HTC", type: "licensing"},
-  {source: "Samsung", target: "Apple", type: "suit"},
-  {source: "Motorola", target: "Apple", type: "suit"},
+  {source: "Samsung", target: "Apple", },
+  {source: "Motorola", target: "Apple", },
   {source: "Nokia", target: "Apple", type: "resolved"},
-  {source: "HTC", target: "Apple", type: "suit"},
+  {source: "HTC", target: "Apple", },
   {source: "Kodak", target: "Apple", type: "licensing"},
-  {source: "Kodak", target: "Apple", type: "suit"},
-  {source: "Microsoft", target: "Barnes & Noble", type: "suit"},
-  {source: "Microsoft", target: "Foxconn", type: "suit"},
-  {source: "Apple", target: "HTC", type: "suit", st: "goal"},
-  {source: "D", target: "Apple", type: "suit", st: "goal"},
-  {source: "Microsoft", target: "Inventec", type: "suit"},
+  {source: "Kodak", target: "Apple", },
+  {source: "Microsoft", target: "Barnes & Noble", },
+  {source: "Microsoft", target: "Foxconn", },
+  {source: "Apple", target: "HTC", , st: "goal"},
+  {source: "D", target: "Apple", , st: "goal"},
+  {source: "Microsoft", target: "Inventec", },
   {source: "Samsung", target: "Kodak", type: "resolved"},
   {source: "LG", target: "Kodak", type: "resolved"},
-  {source: "Nokia", target: "Qualcomm", type: "suit"},
-  {source: "Nokia", target: "A", type: "suit"},
-*/  {source: "A", target: "B", type: "suit"},
-  {source: "B", target: "A", type: "suit"},
-  {source: "B", target: "C", type: "suit"},
-  {source: "C", target: "B", type: "suit"},
-  {source: "C", target: "D", type: "suit"},
-  {source: "D", target: "C", type: "suit"},
-  {source: "D", target: "A", type: "suit"},
-  {source: "A", target: "D", type: "suit"},
-  {source: "A", target: "C", type: "suit"},
-  {source: "C", target: "A", type: "suit"},
-  {source: "B", target: "D", type: "suit"},
-  {source: "D", target: "B", type: "suit"},
-  {source: "E", target: "D", type: "suit"},
-  {source: "D", target: "E", type: "suit"},
-  {source: "B", target: "E", type: "suit"},
-  {source: "C", target: "E", type: "suit"},
-  {source: "A", target: "E", type: "suit"},
-  {source: "E", target: "A", type: "suit"},
-  {source: "E", target: "B", type: "suit"},
-  {source: "E", target: "C", type: "suit"},
+  {source: "Nokia", target: "Qualcomm", },
+  {source: "Nokia", target: "A", },
+*/  
+  {source: "A", target: "B", type: "friend", source_type: "me", target_type: "friend"},
+  {source: "B", target: "A", type: "none"},
+  {source: "B", target: "C", },
+  {source: "C", target: "B", },
+  {source: "C", target: "D", },
+  {source: "D", target: "C", },
+  {source: "D", target: "A", },
+  {source: "A", target: "D", type: "friend", target_type: "friend"},
+  {source: "A", target: "C", type: "friend", target_type: "friend"},
+  {source: "C", target: "A", },
+  {source: "B", target: "D", },
+  {source: "D", target: "B", },
+  {source: "E", target: "D", },
+  {source: "D", target: "E", },
+  {source: "B", target: "E", },
+  {source: "C", target: "E", },
+  {source: "A", target: "E", },
+  {source: "E", target: "A", },
+  {source: "E", target: "B", },
+  {source: "E", target: "C", },
 
-  {source: "F", target: "G", type: "suit"},
-  {source: "F", target: "H", type: "suit"},
-  {source: "F", target: "I", type: "suit"},
+  {source: "F", target: "G", },
+  {source: "F", target: "H", },
+  {source: "F", target: "I", },
 
-  {source: "G", target: "F", type: "suit"},
-  {source: "G", target: "H", type: "suit"},
-  {source: "G", target: "I", type: "suit"},
+  {source: "G", target: "F", },
+  {source: "G", target: "H", },
+  {source: "G", target: "I", },
 
-  {source: "H", target: "G", type: "suit"},
-  {source: "H", target: "F", type: "suit"},
-  {source: "H", target: "I", type: "suit"},
+  {source: "H", target: "G", },
+  {source: "H", target: "F", },
+  {source: "H", target: "I", },
 
-  {source: "I", target: "G", type: "suit"},
-  {source: "I", target: "H", type: "suit"},
-  {source: "I", target: "F", type: "suit"},
+  {source: "I", target: "G", },
+  {source: "I", target: "H", },
+  {source: "I", target: "F", },
  
-  {source: "A", target: "G", type: "suit"},
-  {source: "B", target: "H", type: "suit"},
-  {source: "C", target: "I", type: "suit"},
+  {source: "A", target: "G", },
+  {source: "B", target: "H", },
+  {source: "C", target: "I", },
 
-  {source: "D", target: "G", type: "suit"},
-  {source: "E", target: "H", type: "suit"},
-  {source: "H", target: "F", type: "suit"},
+  {source: "D", target: "G", },
+  {source: "E", target: "H", },
+  {source: "H", target: "F", },
 
 ];
 
-process_graph('#graph',links, 400, 300, 60, -800);
+process_graph('#graph',links, 400, 300, 80, -1000);
 
 function redraw(_id, _width, _height, _distance, _charge){
   delete_graph(_id);
