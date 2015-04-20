@@ -19,6 +19,8 @@ function process_graph(_id, _data, _width, _height, _distance, _charge){
 	  links_data[linknum] = {};
 	  links_data[linknum].source = nodes[link.source] || (nodes[link.source] = {name: link.source});
 	  links_data[linknum].target = nodes[link.target] || (nodes[link.target] = {name: link.target});
+	  links_data[linknum].type = link.type === undefined ? 'none' : link.type;
+
 	  //links_data[linknum].st && (links_data[linknum].source['state'] = link.st);
 	  linknum = linknum + 1;
 	});
