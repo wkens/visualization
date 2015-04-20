@@ -60,73 +60,76 @@ function process_graph(_id, _data, _width, _height, _distance, _charge){
 	// Per-type markers, as they don't inherit styles.
 	svg.append("defs").selectAll("marker")
 		.data(linktypes)
-	.enter().append("marker")
-		.attr("id", function(d) { return d; })
-		.attr("viewBox", "0 -5 10 10")
-		.attr("refX", 22)
-		.attr("refY", -0.47)
-		.attr("markerWidth", 8)
-		.attr("markerHeight", 8)
-		.attr("markerUnits", 0.1)
-		.attr("orient", "auto")
-		.attr("class", function(d){ return "allow_" + d; })
-	.append("path")
-		.attr("d", "M0,-3L10,0L0,5");
+		.enter().append("marker")
+			.attr("id", function(d) { return d; })
+			.attr("viewBox", "0 -5 10 10")
+			.attr("refX", 22)
+			.attr("refY", -0.47)
+			.attr("markerWidth", 8)
+			.attr("markerHeight", 8)
+			.attr("markerUnits", 0.1)
+			.attr("orient", "auto")
+			.attr("class", function(d){ return "allow_" + d; })
+		.append("path")
+			.attr("d", "M0,-3L10,0L0,5");
 
 	var path = svg.append("g").selectAll("path")
-	    .data(force.links())
-	  .enter().append("path")
-	  	.attr("fill","none")
-	  	.attr("stroke","black")
-	    .attr("class", function(d) {
-	     return "link " + " link_" + d.type; })
-	    .attr("marker-end", function(d) { return "url(#" + d.type + ")"; });
+		.data(force.links())
+		.enter().append("path")
+			.attr("fill","none")
+			.attr("stroke","black")
+			.attr("marker-end", function(d) { return "url(#" + d.type + ")"; })
+			.attr("class", function(d) {
+				return "link " + " link_" + d.type;
+			});
 
 
 	var circle = svg.append("g").selectAll("circle")
-	    .data(force.nodes())
-	  .enter().append("circle")
-	    .attr("r", 10)
-	    .call(force.drag)
-	    .attr("id", function(d) { return "nid_" + d.name;})
-	    .attr("class", function(d){
-	    	var tmp = "node";
-	    	if(!(d.type === undefined)){
-	    		tmp += " node_" + d.type;
-	    	} 
-	    	return tmp; 
-	    });
+	.data(force.nodes())
+	.enter()
+	.append("circle")
+		.call(force.drag)
+		.attr("r", 10)
+		.attr("id", function(d) { return "nid_" + d.name;})
+		.attr("class", function(d){
+			var tmp = "node";
+			if(!(d.type === undefined)){
+				tmp += " node_" + d.type;
+			} 
+			return tmp; 
+		});
 
 	var text = svg.append("g").selectAll("text")
-	    .data(force.nodes())
-	  .enter().append("text")
-	  	.attr("class",function(d){
-	    	var tmp = "node_label";
-	    	if(!(d.type === undefined)){
-	    		tmp += " node_label_" + d.type;
-	    	} 
-	    	return tmp; 
-	    })
-	    .attr("x", 11)
-	    .attr("y", ".31em")
-	    .text(function(d) { return d.name; });
+		.data(force.nodes())
+		.enter()
+		.append("text")
+			.text(function(d) { return d.name; })
+			.attr("x", 11)
+			.attr("y", ".31em")
+			.attr("class",function(d){
+				var tmp = "node_label";
+				if(!(d.type === undefined)){
+					tmp += " node_label_" + d.type;
+				} 
+				return tmp; 
+			});
 
 	// Use elliptical arc path segments to doubly-encode directionality.
 	function tick() {
-	  path.attr("d", linkArc);
-	  circle.attr("transform", transform);
-	  text.attr("transform", transform);
+		path.attr("d", linkArc);
+		circle.attr("transform", transform);
+		text.attr("transform", transform);
 	}
 
 	function linkArc(d) {
-	  var dx = d.target.x - d.source.x,
-	      dy = d.target.y - d.source.y,
-	      dr = Math.sqrt(dx * dx + dy * dy) * 1.8;
-	  return "M" + d.source.x + "," + d.source.y + "A" + dr + "," + dr + " 0 0,1 " + d.target.x + "," + d.target.y;
+		var dx = d.target.x - d.source.x,
+		dy = d.target.y - d.source.y,
+		dr = Math.sqrt(dx * dx + dy * dy) * 1.8;
+		return "M" + d.source.x + "," + d.source.y + "A" + dr + "," + dr + " 0 0,1 " + d.target.x + "," + d.target.y;
 	}
 
 	function transform(d) {
-	  return "translate(" + d.x + "," + d.y + ")";
+		return "translate(" + d.x + "," + d.y + ")";
 	}
 
 	drag = d3.behavior.drag().on("drag", function(d) {
@@ -148,7 +151,7 @@ function process_graph(_id, _data, _width, _height, _distance, _charge){
 		vbox_y += d_y;
 		return svg.attr("viewBox", "" + vbox_x + " " + vbox_y + " " + vbox_width + " " + vbox_height);  //svgタグのviewBox属性を更新
 	});
-  　　svg.call(zoom);
+	svg.call(zoom);
 
 }
 
