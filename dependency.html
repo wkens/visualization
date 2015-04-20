@@ -1,6 +1,16 @@
 <!DOCTYPE html>
-<meta charset="utf-8">
-<style>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+
+	<style>
+	div{
+		display: inline-block;
+		width:100;
+		height:100;
+		border: 1px black solid;
+	}
 
 .link {
   fill: none;
@@ -32,7 +42,7 @@ text {
   text-shadow: 0 1px 0 #fff, 1px 0 0 #fff, 0 -1px 0 #fff, -1px 0 0 #fff;
 }
 
-div{
+div.box{
   border:1px black solid;
 }
 
@@ -46,17 +56,24 @@ div{
 
 .circle.goal{
   fill: yellow;
-}
+}	</style>
 
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+<script src="http://d3js.org/d3.v2.js"></script>
+<script src="http://cdnjs.cloudflare.com/ajax/libs/prettify/188.0.0/prettify.js"></script>
 
-</style>
+<!--	<script src="/visualization/js/d3.v3.min.js"></script> -->
+	<script src="js/processgraph.js"></script>
+</head>
 <body>
-<div id="graph" />
 
-<script src="/visualization/js/d3.v3.min.js"></script>
+	<div class="box" id="graph"></div><br/>
+	<a href="javascript:void(0)" onclick="show_svg_code('graph','#svg_code'); return false;">code</a><br/>
+	<a href="javascript:void(0)" onclick="redraw('#graph', 400, 300, 80, -2000); return false;">redraw</a><br/>
+	<div><code id="svg_code">zzz</code></div>
+
 <script>
 
-// http://blog.thomsonreuters.com/index.php/mobile-patent-suits-graphic-of-the-day/
 var links = [
   {source: "Microsoft", target: "Amazon", type: "licensing", st: "start"},
   {source: "Microsoft", target: "HTC", type: "licensing"},
@@ -119,95 +136,18 @@ var links = [
   {source: "D", target: "G", type: "suit"},
   {source: "E", target: "H", type: "suit"},
   {source: "H", target: "F", type: "suit"},
+
 ];
 
-showGraph('#graph', links);
+process_graph('#graph',links, 400, 300, 60, -800);
 
-function showGraph(id,data){
-var nodes = {};
-
-// Compute the distinct nodes from the links.
-data.forEach(function(link) {
-  link.source = nodes[link.source] || (nodes[link.source] = {name: link.source});
-  link.target = nodes[link.target] || (nodes[link.target] = {name: link.target});
-  link.st && (link.source['state'] = link.st);
-});
-
-var width = 900,
-    height = 500;
-
-var force = d3.layout.force()
-    .nodes(d3.values(nodes))
-    .links(links)
-    .size([width, height])
-    .linkDistance(80)
-    .charge(-1000)
-    .on("tick", tick)
-    .start();
-
-var svg = d3.select(id).append("svg")
-    .attr("width", width)
-    .attr("height", height)
-    .attr("scale", .5);;
-
-
-// Per-type markers, as they don't inherit styles.
-  svg.append("defs").selectAll("marker")
-    .data(["suit", "licensing", "resolved"])
-  .enter().append("marker")
-    .attr("id", function(d) { return d; })
-    .attr("viewBox", "0 -5 10 10")
-    .attr("refX", 18)
-    .attr("refY", -1.5)
-    .attr("markerWidth", 8)
-    .attr("markerHeight", 8)
-    .attr("orient", "auto")
-  .append("path")
-    .attr("d", "M0,-4L10,0L0,5");
-
-var path = svg.append("g").selectAll("path")
-    .data(force.links())
-  .enter().append("path")
-    .attr("class", function(d) { return "link " + d.type; })
-    .attr("marker-end", function(d) { return "url(#" + d.type + ")"; });
-
-
-var circle = svg.append("g").selectAll("circle")
-    .data(force.nodes())
-  .enter().append("circle")
-    .attr("r", 10)
-    .call(force.drag)
-    .attr("id", function(d) { return "nid_" + d.name;})
-    .attr("class", function(d){ return "circle " + d.state ; });
-
-var text = svg.append("g").selectAll("text")
-    .data(force.nodes())
-  .enter().append("text")
-    .attr("x", 11)
-    .attr("y", ".31em")
-    .text(function(d) { return d.name; });
-
-// Use elliptical arc path segments to doubly-encode directionality.
-function tick() {
-  path.attr("d", linkArc);
-  circle.attr("transform", transform);
-  text.attr("transform", transform);
+function redraw(_id, _width, _height, _distance, _charge){
+  delete_graph(_id);
+  process_graph(_id, links, _width, _height, _distance, _charge);
 }
-
-function linkArc(d) {
-  var dx = d.target.x - d.source.x,
-      dy = d.target.y - d.source.y,
-      dr = Math.sqrt(dx * dx + dy * dy) * 1.8;
-  return "M" + d.source.x + "," + d.source.y + "A" + dr + "," + dr + " 0 0,1 " + d.target.x + "," + d.target.y;
-}
-
-function transform(d) {
-  return "translate(" + d.x + "," + d.y + ")";
-}
-}
-
-
 
 </script>
+
 </body>
 </html>
+
