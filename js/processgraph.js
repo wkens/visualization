@@ -1,8 +1,8 @@
 function process_graph(_id, _data, _width, _height, _distance, _charge){
 
 	var DEF_ID     = 'graph';
-	var DEF_WIDTH  = "100%";
-	var DEF_HEIGHT = "100%";
+	var DEF_WIDTH  = 400;
+	var DEF_HEIGHT = 400;
 	var DEF_DISTANCE = 80;
 	var DEV_CHARGE = -800;
 
@@ -13,6 +13,11 @@ function process_graph(_id, _data, _width, _height, _distance, _charge){
 	var charge  = _charge === undefined ? DEV_CHARGE : _charge;
 	var nodes   = {};
 	var links_data = [];
+
+	var vbox_x = 0;
+	var vbox_y = 0;
+	var vbox_default_width = vbox_width = width;
+	var vbox_default_height = vbox_height = height;
 
 	var linknum = 0;
 	_data.forEach(function(link) {
@@ -35,7 +40,8 @@ function process_graph(_id, _data, _width, _height, _distance, _charge){
 
 	var svg = d3.select(id).append("svg")
 	    .attr("width", width)
-	    .attr("height", height);
+	    .attr("height", height)
+	    .attr("viewBox", "" + vbox_x + " " + vbox_y + " " + vbox_width + " " + vbox_height);
 
 	// Per-type markers, as they don't inherit styles.
 	  svg.append("defs").selectAll("marker")
@@ -43,7 +49,7 @@ function process_graph(_id, _data, _width, _height, _distance, _charge){
 	  .enter().append("marker")
 	    .attr("id", function(d) { return d; })
 	    .attr("viewBox", "0 -5 10 10")
-	    .attr("refX", 18)
+	    .attr("refX", 3)
 	    .attr("refY", -1.5)
 	    .attr("markerWidth", 8)
 	    .attr("markerHeight", 8)
@@ -61,7 +67,7 @@ function process_graph(_id, _data, _width, _height, _distance, _charge){
 	var circle = svg.append("g").selectAll("circle")
 	    .data(force.nodes())
 	  .enter().append("circle")
-	    .attr("r", 10)
+	    .attr("r", 6)
 	    .call(force.drag)
 	    .attr("id", function(d) { return "nid_" + d.name;})
 	    //.attr("class", function(d){ return "circle " + d.state; });
@@ -90,6 +96,27 @@ function process_graph(_id, _data, _width, _height, _distance, _charge){
 	function transform(d) {
 	  return "translate(" + d.x + "," + d.y + ")";
 	}
+
+	drag = d3.behavior.drag().on("drag", function(d) {
+		vbox_x -= d3.event.dx;
+		vbox_y -= d3.event.dy;
+		return svg.attr("translate", "" + vbox_x + " " + vbox_y); //基点の調整。svgタグのtranslate属性を更新
+	});
+	svg.call(drag);
+	
+	zoom = d3.behavior.zoom().on("zoom", function(d) {
+		var befere_vbox_width, before_vbox_height, d_x, d_y;
+		befere_vbox_width = vbox_width;
+		before_vbox_height = vbox_height;
+		vbox_width = vbox_default_width * d3.event.scale;
+		vbox_height = vbox_default_height * d3.event.scale;
+		d_x = (befere_vbox_width - vbox_width) / 2;
+		d_y = (before_vbox_height - vbox_height) / 2;
+		vbox_x += d_x;
+		vbox_y += d_y;
+		return svg.attr("viewBox", "" + vbox_x + " " + vbox_y + " " + vbox_width + " " + vbox_height);  //svgタグのviewBox属性を更新
+	});
+  　　svg.call(zoom);
 
 }
 
